@@ -1,0 +1,6 @@
+decks/
+csvs/
+.audio_cache/
+__pycache__/
+*.pyc
+.claude/
