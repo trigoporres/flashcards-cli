@@ -12,7 +12,7 @@ Te voy a pasar la transcripción de un video (serie, YouTube, TED Talk, podcast,
 ## Formato CSV
 
 Separador: `;` (punto y coma)
-Columnas: `id;tipo;palabra_en;palabra_es;frase_en;frase_en_cloze;frase_es;pronunciacion_ipa;registro;colocaciones;acepciones;por_que_ahora;fuente`
+Columnas: `id;tipo;palabra_en;palabra_es;frase_en;frase_en_cloze;frase_en_alt;frase_es;pronunciacion_ipa;registro;colocaciones;acepciones;por_que_ahora;fuente`
 
 ### Descripción de columnas
 
@@ -22,6 +22,7 @@ Columnas: `id;tipo;palabra_en;palabra_es;frase_en;frase_en_cloze;frase_es;pronun
 - **palabra_es**: La palabra o expresión en español tal como aparece en `frase_es` (para poder resaltarla). Debe ser una subcadena exacta de `frase_es`.
 - **frase_en**: Frase textual o casi textual de la transcripción donde aparece
 - **frase_en_cloze**: La misma frase pero con `palabra_en` reemplazada por `____`. Usa la forma conjugada exacta que aparece en `frase_en`. Ej: "I've never ____ a promise" (no "to renege on"). Si la expresión es muy corta y el cloze sería trivial (como "Hang on." → "____"), usa igualmente `____` para consistencia.
+- **frase_en_alt**: Segunda frase de ejemplo en un contexto diferente al de `frase_en`. Ayuda a la descontextualización progresiva. Puede ser inventada o de otra fuente. Dejar vacío si no hay ejemplo natural.
 - **frase_es**: Traducción natural de la frase al español
 - **pronunciacion_ipa**: Pronunciación IPA de `palabra_en`
 - **registro**: `formal`, `neutro`, `coloquial` o `vulgar`
@@ -33,10 +34,10 @@ Columnas: `id;tipo;palabra_en;palabra_es;frase_en;frase_en_cloze;frase_es;pronun
 ### Ejemplo
 
 ```
-001;A;to hang on;Espera;Hang on.;____.;Espera un momento.;/hæŋ ɒn/;coloquial;hang on a second|hang on tight|hang on a minute;esperar|agarrarse fuerte;;TBBT S01E01
-001;B;to hang on;Espera;Hang on.;____.;Espera un momento.;/hæŋ ɒn/;coloquial;hang on a second|hang on tight|hang on a minute;esperar|agarrarse fuerte;Phrasal verb muy frecuente en conversación oral, reemplaza a "wait";TBBT S01E01
-002;A;to wind up;Termina;She winds up a waitress at the Cheesecake Factory.;She ____ a waitress at the Cheesecake Factory.;Termina siendo camarera en el Cheesecake Factory.;/waɪnd ʌp/;coloquial;wind up in jail|wind up doing something|wind up broke;terminar siendo|acabar|resultar;;TBBT S01E01
-002;B;to wind up;Termina;She winds up a waitress at the Cheesecake Factory.;She ____ a waitress at the Cheesecake Factory.;Termina siendo camarera en el Cheesecake Factory.;/waɪnd ʌp/;coloquial;wind up in jail|wind up doing something|wind up broke;terminar siendo|acabar|resultar;Phrasal verb muy común para indicar resultado final o situación inesperada;TBBT S01E01
+001;A;to hang on;Espera;Hang on.;____.;Hang on, I'll be right back.;Espera un momento.;/hæŋ ɒn/;coloquial;hang on a second|hang on tight|hang on a minute;esperar|agarrarse fuerte;;TBBT S01E01
+001;B;to hang on;Espera;Hang on.;____.;Hang on, I'll be right back.;Espera un momento.;/hæŋ ɒn/;coloquial;hang on a second|hang on tight|hang on a minute;esperar|agarrarse fuerte;Phrasal verb muy frecuente en conversación oral, reemplaza a "wait";TBBT S01E01
+002;A;to wind up;Termina;She winds up a waitress at the Cheesecake Factory.;She ____ a waitress at the Cheesecake Factory.;He wound up sleeping on the couch.;Termina siendo camarera en el Cheesecake Factory.;/waɪnd ʌp/;coloquial;wind up in jail|wind up doing something|wind up broke;terminar siendo|acabar|resultar;;TBBT S01E01
+002;B;to wind up;Termina;She winds up a waitress at the Cheesecake Factory.;She ____ a waitress at the Cheesecake Factory.;He wound up sleeping on the couch.;Termina siendo camarera en el Cheesecake Factory.;/waɪnd ʌp/;coloquial;wind up in jail|wind up doing something|wind up broke;terminar siendo|acabar|resultar;Phrasal verb muy común para indicar resultado final o situación inesperada;TBBT S01E01
 ```
 
 ## Notas
@@ -44,6 +45,7 @@ Columnas: `id;tipo;palabra_en;palabra_es;frase_en;frase_en_cloze;frase_es;pronun
 - No incluyas header en el CSV (la primera fila ya es datos).
 - Las colocaciones y acepciones van separadas por `|` (pipe), NO por `;`.
 - `por_que_ahora` solo se llena en filas tipo B. En filas tipo A déjalo vacío.
+- `frase_en_alt` debe usar la palabra en un contexto diferente al de `frase_en` para favorecer la generalización. Si no hay un ejemplo natural, déjalo vacío.
 - `palabra_es` debe ser exactamente como aparece en `frase_es` (mismo tiempo verbal, misma forma) para que pueda resaltarse automáticamente.
 - Usa IPA americano.
 

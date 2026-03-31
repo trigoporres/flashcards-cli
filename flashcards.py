@@ -38,7 +38,7 @@ C_BLUE = "\033[34m"
 C_CYAN = "\033[36m"
 C_MAGENTA = "\033[35m"
 
-CSV_HEADER = "id;tipo;palabra_en;palabra_es;frase_en;frase_en_cloze;frase_es;pronunciacion_ipa;registro;colocaciones;acepciones;por_que_ahora;fuente"
+CSV_HEADER = "id;tipo;palabra_en;palabra_es;frase_en;frase_en_cloze;frase_en_alt;frase_es;pronunciacion_ipa;registro;colocaciones;acepciones;por_que_ahora;fuente"
 
 ACCENT_TLD = {
     "us": "com",
@@ -112,11 +112,24 @@ def cmd_import(args):
         card_id = row[0].strip()
         tipo = row[1].strip().upper()
         palabra_en = row[2].strip()
-        # Support 11-col (legacy), 12-col (palabra_es), 13-col (+ frase_en_cloze)
-        if len(row) >= 13:
+        # Support 11-col (legacy), 12-col (palabra_es), 13-col (+ frase_en_cloze), 14-col (+ frase_en_alt)
+        if len(row) >= 14:
             palabra_es = row[3].strip()
             frase_en = row[4].strip()
             frase_en_cloze = row[5].strip()
+            frase_en_alt = row[6].strip()
+            frase_es = row[7].strip()
+            pronunciacion_ipa = row[8].strip()
+            registro = row[9].strip()
+            colocaciones = _parse_pipe_list(row[10])
+            acepciones = _parse_pipe_list(row[11])
+            por_que_ahora = row[12].strip()
+            fuente = row[13].strip()
+        elif len(row) >= 13:
+            palabra_es = row[3].strip()
+            frase_en = row[4].strip()
+            frase_en_cloze = row[5].strip()
+            frase_en_alt = ""
             frase_es = row[6].strip()
             pronunciacion_ipa = row[7].strip()
             registro = row[8].strip()
@@ -127,6 +140,7 @@ def cmd_import(args):
         elif len(row) >= 12:
             palabra_es = row[3].strip()
             frase_en_cloze = ""
+            frase_en_alt = ""
             frase_en = row[4].strip()
             frase_es = row[5].strip()
             pronunciacion_ipa = row[6].strip()
@@ -138,6 +152,7 @@ def cmd_import(args):
         else:
             palabra_es = ""
             frase_en_cloze = ""
+            frase_en_alt = ""
             frase_en = row[3].strip()
             frase_es = row[4].strip()
             pronunciacion_ipa = row[5].strip()
@@ -161,6 +176,7 @@ def cmd_import(args):
             "palabra_es": palabra_es,
             "frase_en": frase_en,
             "frase_en_cloze": frase_en_cloze,
+            "frase_en_alt": frase_en_alt,
             "frase_es": frase_es,
             "pronunciacion_ipa": pronunciacion_ipa,
             "registro": registro,
@@ -299,6 +315,9 @@ def _render_back(card, deck_name, reviewed, total, w):
         frase_en = card.get("frase_en", "")
         if frase_en:
             print(f"  {C_GREEN}\"{frase_en}\"{C_RESET}")
+        frase_en_alt = card.get("frase_en_alt", "")
+        if frase_en_alt:
+            print(f"  {C_DIM}\"{frase_en_alt}\"{C_RESET}")
         print(sep)
         if registro:
             print(f"  {C_DIM}Registro:{C_RESET} {registro}")
@@ -312,6 +331,9 @@ def _render_back(card, deck_name, reviewed, total, w):
         frase_en = card.get("frase_en", "")
         if frase_en:
             print(f"  {C_DIM}\"{frase_en}\"{C_RESET}")
+        frase_en_alt = card.get("frase_en_alt", "")
+        if frase_en_alt:
+            print(f"  {C_DIM}\"{frase_en_alt}\"{C_RESET}")
         print(sep)
         # Spanish translation + IPA
         answer_line = f"  {C_BOLD}{C_GREEN}{card.get('frase_es', '')}{C_RESET}"
