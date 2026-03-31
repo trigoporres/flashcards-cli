@@ -168,6 +168,7 @@ def cmd_import(args):
             "acepciones": acepciones,
             "por_que_ahora": por_que_ahora,
             "fuente": fuente,
+            "nota": "",
             "fsrs_card": fsrs.Card(),
             "reviews": [],
         })
@@ -220,6 +221,20 @@ def _speak(text, lang="en", tld="com"):
         )
     except Exception:
         pass  # Audio is best-effort, never block the review
+
+
+def _edit_note(card):
+    """Inline note editor. Called while terminal is in normal (cooked) mode."""
+    current = card.get("nota", "")
+    print()
+    if current:
+        print(f"  {C_DIM}Nota actual:{C_RESET} {C_CYAN}{current}{C_RESET}")
+    print(f"  {C_CYAN}Nueva nota{C_RESET} (vacío para borrar): ", end="", flush=True)
+    try:
+        new_note = input().strip()
+    except (EOFError, KeyboardInterrupt):
+        return
+    card["nota"] = new_note
 
 
 def _highlight_in_phrase(phrase, word):
@@ -326,9 +341,12 @@ def _render_back(card, deck_name, reviewed, total, w):
         if por_que_ahora:
             print(f"  {C_DIM}Por qu\u00e9 ahora:{C_RESET} {por_que_ahora}")
 
+    nota = card.get("nota", "")
+    if nota:
+        print(f"  {C_DIM}Nota:{C_RESET} {C_CYAN}{nota}{C_RESET}")
     print(sep)
     print(f"  {C_RED}[1] Again{C_RESET}  {C_YELLOW}[2] Hard{C_RESET}  {C_GREEN}[3] Good{C_RESET}  {C_BLUE}[4] Easy{C_RESET}")
-    print(f"  {C_DIM}[d] Eliminar         [q] Salir{C_RESET}")
+    print(f"  {C_DIM}[d] Eliminar  [n] Nota  [q] Salir{C_RESET}")
 
 
 def _card_match_key(card):
@@ -447,6 +465,10 @@ def cmd_review(args):
                 else:
                     print(f" {C_DIM}Cancelado.{C_RESET}")
                     continue
+            if key == "n":
+                _edit_note(actual)
+                _render_back(actual, deck_name, reviewed, total, w)
+                continue
             if key in RATING_MAP:
                 rating = RATING_MAP[key]
                 new_card, log = SCHEDULER.review_card(actual["fsrs_card"], rating)

@@ -77,6 +77,7 @@ Durante el repaso:
 - **2** — Hard (costó)
 - **3** — Good (bien)
 - **4** — Easy (fácil)
+- **n** — añadir/editar nota personal en la tarjeta
 - **d** — eliminar tarjeta
 - **q** — salir
 
@@ -89,6 +90,7 @@ Las tarjetas muestran información lingüística adicional al revelar la respues
 - **Colocaciones** frecuentes
 - **Acepciones** principales (tipo A)
 - **Por qué ahora** — justificación de utilidad (tipo B)
+- **Nota personal** — visible si la has añadido con `n`
 
 ### 5. Repetir
 
