@@ -38,7 +38,7 @@ C_BLUE = "\033[34m"
 C_CYAN = "\033[36m"
 C_MAGENTA = "\033[35m"
 
-CSV_HEADER = "id;tipo;palabra_en;frase_en;frase_es;pronunciacion_ipa;registro;colocaciones;acepciones;por_que_ahora;fuente"
+CSV_HEADER = "id;tipo;palabra_en;palabra_es;frase_en;frase_en_cloze;frase_es;pronunciacion_ipa;registro;colocaciones;acepciones;por_que_ahora;fuente"
 
 ACCENT_TLD = {
     "us": "com",
@@ -112,14 +112,40 @@ def cmd_import(args):
         card_id = row[0].strip()
         tipo = row[1].strip().upper()
         palabra_en = row[2].strip()
-        frase_en = row[3].strip()
-        frase_es = row[4].strip()
-        pronunciacion_ipa = row[5].strip()
-        registro = row[6].strip()
-        colocaciones = _parse_pipe_list(row[7])
-        acepciones = _parse_pipe_list(row[8])
-        por_que_ahora = row[9].strip()
-        fuente = row[10].strip()
+        # Support 11-col (legacy), 12-col (palabra_es), 13-col (+ frase_en_cloze)
+        if len(row) >= 13:
+            palabra_es = row[3].strip()
+            frase_en = row[4].strip()
+            frase_en_cloze = row[5].strip()
+            frase_es = row[6].strip()
+            pronunciacion_ipa = row[7].strip()
+            registro = row[8].strip()
+            colocaciones = _parse_pipe_list(row[9])
+            acepciones = _parse_pipe_list(row[10])
+            por_que_ahora = row[11].strip()
+            fuente = row[12].strip()
+        elif len(row) >= 12:
+            palabra_es = row[3].strip()
+            frase_en_cloze = ""
+            frase_en = row[4].strip()
+            frase_es = row[5].strip()
+            pronunciacion_ipa = row[6].strip()
+            registro = row[7].strip()
+            colocaciones = _parse_pipe_list(row[8])
+            acepciones = _parse_pipe_list(row[9])
+            por_que_ahora = row[10].strip()
+            fuente = row[11].strip()
+        else:
+            palabra_es = ""
+            frase_en_cloze = ""
+            frase_en = row[3].strip()
+            frase_es = row[4].strip()
+            pronunciacion_ipa = row[5].strip()
+            registro = row[6].strip()
+            colocaciones = _parse_pipe_list(row[7])
+            acepciones = _parse_pipe_list(row[8])
+            por_que_ahora = row[9].strip()
+            fuente = row[10].strip()
 
         if not card_id or not tipo or not palabra_en:
             continue
@@ -132,7 +158,9 @@ def cmd_import(args):
             "id": card_id,
             "tipo": tipo,
             "palabra_en": palabra_en,
+            "palabra_es": palabra_es,
             "frase_en": frase_en,
+            "frase_en_cloze": frase_en_cloze,
             "frase_es": frase_es,
             "pronunciacion_ipa": pronunciacion_ipa,
             "registro": registro,
@@ -194,6 +222,13 @@ def _speak(text, lang="en", tld="com"):
         pass  # Audio is best-effort, never block the review
 
 
+def _highlight_in_phrase(phrase, word):
+    """Highlight word/expression within phrase using case-insensitive match."""
+    import re
+    pattern = re.compile(re.escape(word), re.IGNORECASE)
+    return pattern.sub(lambda m: f"{C_RESET}{C_BOLD}{C_YELLOW}{m.group()}{C_RESET}{C_GREEN}", phrase)
+
+
 def _render_front(card, deck_name, reviewed, total, w):
     """Render the front side of a card."""
     tipo = card.get("tipo", "A")
@@ -206,8 +241,19 @@ def _render_front(card, deck_name, reviewed, total, w):
     print()
 
     if tipo == "A":
-        # Production: show Spanish phrase
-        print(f"  {C_BOLD}{card.get('frase_es', '')}{C_RESET}")
+        # Production: show Spanish phrase with target word highlighted
+        frase_es = card.get("frase_es", "")
+        palabra_es = card.get("palabra_es", "")
+        if palabra_es:
+            frase_es = _highlight_in_phrase(frase_es, palabra_es)
+        print(f"  {C_BOLD}{frase_es}{C_RESET}")
+        frase_en_cloze = card.get("frase_en_cloze", "")
+        if frase_en_cloze:
+            print()
+            highlighted_cloze = frase_en_cloze.replace(
+                "____", f"{C_RESET}{C_BOLD}{C_YELLOW}____{C_RESET}{C_DIM}"
+            )
+            print(f"  {C_DIM}\"{highlighted_cloze}\"{C_RESET}")
     else:
         # Comprehension: show English word + phrase
         print(f"  {C_BOLD}{card.get('palabra_en', '')}{C_RESET}")
@@ -239,7 +285,11 @@ def _render_back(card, deck_name, reviewed, total, w):
 
     if tipo == "A":
         # Production: front was Spanish, reveal English
-        print(f"  {C_DIM}{card.get('frase_es', '')}{C_RESET}")
+        frase_es = card.get("frase_es", "")
+        palabra_es = card.get("palabra_es", "")
+        if palabra_es:
+            frase_es = _highlight_in_phrase(frase_es, palabra_es)
+        print(f"  {C_DIM}{frase_es}{C_RESET}")
         print(sep)
         # Word + IPA on same line
         word_line = f"  {C_BOLD}{C_GREEN}{card.get('palabra_en', '')}{C_RESET}"

@@ -21,9 +21,9 @@ Obtener los subtítulos/transcript de la fuente. Puede ser:
 Guarda el CSV en `csvs/` para tenerlo organizado. El formato que genera es:
 
 ```csv
-id;tipo;palabra_en;frase_en;frase_es;pronunciacion_ipa;registro;colocaciones;acepciones;por_que_ahora;fuente
-001;A;to hang on;Hang on.;Espera un momento.;/hæŋ ɒn/;coloquial;hang on a second|hang on tight;esperar|agarrarse fuerte;;TBBT S01E01
-001;B;to hang on;Hang on.;Espera un momento.;/hæŋ ɒn/;coloquial;hang on a second|hang on tight;esperar|agarrarse fuerte;Phrasal verb frecuente en conversación;TBBT S01E01
+id;tipo;palabra_en;palabra_es;frase_en;frase_es;pronunciacion_ipa;registro;colocaciones;acepciones;por_que_ahora;fuente
+001;A;to hang on;esperar;Hang on.;Espera un momento.;/hæŋ ɒn/;coloquial;hang on a second|hang on tight;esperar|agarrarse fuerte;;TBBT S01E01
+001;B;to hang on;esperar;Hang on.;Espera un momento.;/hæŋ ɒn/;coloquial;hang on a second|hang on tight;esperar|agarrarse fuerte;Phrasal verb frecuente en conversación;TBBT S01E01
 ```
 
 Cada entrada genera dos tarjetas:
@@ -122,14 +122,16 @@ El merge no borra los decks originales, solo copia las tarjetas (sin duplicar) a
 
 ## Formato CSV
 
-Separador: `;` (punto y coma). 11 columnas:
+Separador: `;` (punto y coma). 13 columnas:
 
 | Columna | Descripción |
 |---------|-------------|
 | `id` | Número correlativo (001, 002, ...) |
 | `tipo` | `A` (ES→EN) o `B` (EN→ES) |
-| `palabra_en` | Palabra, phrasal verb o expresión |
+| `palabra_en` | Palabra, phrasal verb o expresión en inglés |
+| `palabra_es` | La palabra en español tal como aparece en `frase_es` (para resaltarla) |
 | `frase_en` | Frase de la fuente donde aparece |
+| `frase_en_cloze` | La misma frase con `palabra_en` reemplazada por `____` |
 | `frase_es` | Traducción natural al español |
 | `pronunciacion_ipa` | Pronunciación IPA |
 | `registro` | formal / neutro / coloquial / vulgar |
