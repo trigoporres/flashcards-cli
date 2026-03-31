@@ -672,6 +672,98 @@ def cmd_history(args):
     print()
 
 
+def cmd_word_stats(args):
+    deck_names = []
+    if getattr(args, "deck", None):
+        deck_names = [args.deck]
+    else:
+        if not DECKS_DIR.exists():
+            print("No hay decks.")
+            return
+        deck_names = [p.stem for p in sorted(DECKS_DIR.glob("*.json"))
+                      if not p.stem.endswith(".backup") and p.stem != "sessions"]
+
+    if not deck_names:
+        print("No hay decks.")
+        return
+
+    now = datetime.now(timezone.utc)
+
+    def _state_info(fc):
+        """Return (label, color) for an fsrs card, distinguishing new from learning."""
+        if fc.last_review is None:
+            return "Nueva",    C_DIM
+        if fc.state == fsrs.State.Learning:
+            return "Aprend.",  C_YELLOW
+        if fc.state == fsrs.State.Review:
+            return "Repaso",   C_GREEN
+        return "Reapren.",     C_RED
+
+    def _due_str(due):
+        delta = (due.date() - now.date()).days
+        if delta <= 0:
+            return "hoy"
+        if delta == 1:
+            return "mañana"
+        return f"en {delta}d"
+
+    def _card_col(card):
+        """Return (visible_text, color) for one card column."""
+        if card is None:
+            return f"{'—':<26}", C_DIM
+        rev = len(card.get("reviews", []))
+        state_str, color = _state_info(card["fsrs_card"])
+        due = _due_str(card["fsrs_card"].due)
+        text = f"{rev:2d} rev · {state_str:<8}· {due:<7}"
+        return text, color
+
+    for deck_name in deck_names:
+        cards = load_deck(deck_name)
+        if not cards:
+            print(f"  {C_YELLOW}Deck '{deck_name}' vacío.{C_RESET}")
+            continue
+
+        # Group cards by id
+        by_id = {}
+        for c in cards:
+            cid = c.get("id", "?")
+            if cid not in by_id:
+                by_id[cid] = {"A": None, "B": None, "palabra_en": c.get("palabra_en", "")}
+            by_id[cid][c.get("tipo", "A")] = c
+
+        total_words = len(by_id)
+        mature = sum(
+            1 for v in by_id.values()
+            if (v["A"] and v["A"]["fsrs_card"].state == fsrs.State.Review
+                and v["A"]["fsrs_card"].last_review is not None)
+            and (v["B"] and v["B"]["fsrs_card"].state == fsrs.State.Review
+                 and v["B"]["fsrs_card"].last_review is not None)
+        )
+        pending = sum(
+            1 for v in by_id.values()
+            if (v["A"] and v["A"]["fsrs_card"].due <= now)
+            or (v["B"] and v["B"]["fsrs_card"].due <= now)
+        )
+
+        w = 72
+        print()
+        print(f"  {C_BOLD}{deck_name}{C_RESET}  ·  {total_words} palabras  ·  "
+              f"{C_GREEN}{mature} maduras{C_RESET}  ·  {C_YELLOW}{pending} pendientes{C_RESET}")
+        print(f"  {'─' * w}")
+        print(f"  {'#':<5}{'Palabra':<24}  {'Tipo A':<26}  Tipo B")
+        print(f"  {'─' * w}")
+
+        for cid, data in sorted(by_id.items()):
+            palabra = data["palabra_en"][:23]
+            a_text, a_color = _card_col(data["A"])
+            b_text, b_color = _card_col(data["B"])
+            print(f"  {cid:<5}{palabra:<24}  {a_color}{a_text}{C_RESET}  {b_color}{b_text}{C_RESET}")
+
+        print(f"  {'─' * w}")
+
+    print()
+
+
 def main():
     parser = argparse.ArgumentParser(description="Flashcards CLI con FSRS-5")
     sub = parser.add_subparsers(dest="command")
@@ -693,6 +785,9 @@ def main():
     sub.add_parser("decks", help="Listar decks")
     sub.add_parser("history", help="Ver historial de sesiones")
 
+    p_word_stats = sub.add_parser("word-stats", help="Estadísticas de progreso por palabra")
+    p_word_stats.add_argument("--deck", help="Deck específico (opcional)")
+
     p_merge = sub.add_parser("merge", help="Combinar decks en uno")
     p_merge.add_argument("--decks", nargs="+", required=True, help="Decks a combinar")
     p_merge.add_argument("--into", required=True, help="Nombre del deck destino")
@@ -711,6 +806,8 @@ def main():
         cmd_merge(args)
     elif args.command == "history":
         cmd_history(args)
+    elif args.command == "word-stats":
+        cmd_word_stats(args)
     else:
         parser.print_help()
 

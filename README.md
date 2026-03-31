@@ -112,9 +112,24 @@ python3 flashcards.py merge --decks "TBBT S01E01" "TBBT S01E02" --into "TBBT Sea
 
 # Ver historial de sesiones, racha y leeches
 python3 flashcards.py history
+
+# Ver progreso por palabra (reviews, estado, próximo repaso)
+python3 flashcards.py word-stats
+python3 flashcards.py word-stats --deck "TBBT S01E01"
 ```
 
 El merge no borra los decks originales, solo copia las tarjetas (sin duplicar) al deck destino.
+
+### Estadísticas por palabra
+
+`word-stats` muestra una tabla con cada palabra del deck: cuántas veces se ha repasado (tipos A y B por separado), estado de aprendizaje y cuándo toca repasar de nuevo.
+
+- **Nueva** (gris) — nunca repasada
+- **Aprend.** (amarillo) — en proceso de aprendizaje inicial
+- **Repaso** (verde) — en ciclo de repaso espaciado (madura)
+- **Reapren.** (rojo) — olvidada, reaprendiendo
+
+Una palabra cuenta como **madura** cuando tanto su tipo A como su tipo B están en estado Repaso.
 
 ### Historial y leeches
 
