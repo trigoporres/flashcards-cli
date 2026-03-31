@@ -1,24 +1,26 @@
-# Flashcards CLI — Aprendizaje de idiomas con repaso espaciado
+🇪🇸 [Leer en español](README.es.md)
 
-Sistema de repaso espaciado (FSRS-5) en terminal para aprender vocabulario desde cualquier fuente de audio/video (series, YouTube, TED Talks, podcasts, etc.).
+# Flashcards CLI — Language learning with spaced repetition
 
-## Flujo completo
+A terminal-based spaced repetition system (FSRS-5) for learning vocabulary from any audio/video source (TV shows, YouTube, TED Talks, podcasts, etc.).
 
-### 1. Conseguir el transcript
+## Full workflow
 
-Obtener los subtítulos/transcript de la fuente. Puede ser:
-- Subtítulos de YouTube
-- Archivo .srt descargado
-- Transcript pegado como texto
+### 1. Get the transcript
 
-### 2. Generar las tarjetas con Claude
+Obtain subtitles or a transcript from the source. It can be:
+- YouTube subtitles
+- A downloaded .srt file
+- A transcript pasted as plain text
 
-1. Abre una conversación con Claude (o cualquier LLM)
-2. Pega el contenido de `prompt.txt`
-3. Rellena los campos `[TU NIVEL]`, `[IDENTIFICADOR]` y `[PEGAR TRANSCRIPCIÓN AQUÍ]`
-4. Claude devuelve un CSV listo para importar
+### 2. Generate cards with Claude
 
-Guarda el CSV en `csvs/` para tenerlo organizado. El formato que genera es:
+1. Open a conversation with Claude (or any LLM)
+2. Paste the contents of `prompt.txt`
+3. Fill in the `[TU NIVEL]`, `[IDENTIFICADOR]`, and `[PEGAR TRANSCRIPCIÓN AQUÍ]` fields
+4. Claude returns a CSV ready to import
+
+Save the CSV in `csvs/` to keep things organised. The generated format is:
 
 ```csv
 id;tipo;palabra_en;palabra_es;frase_en;frase_es;pronunciacion_ipa;registro;colocaciones;acepciones;por_que_ahora;fuente
@@ -26,159 +28,160 @@ id;tipo;palabra_en;palabra_es;frase_en;frase_es;pronunciacion_ipa;registro;coloc
 001;B;to hang on;esperar;Hang on.;Espera un momento.;/hæŋ ɒn/;coloquial;hang on a second|hang on tight;esperar|agarrarse fuerte;Phrasal verb frecuente en conversación;TBBT S01E01
 ```
 
-Cada entrada genera dos tarjetas:
-- **Tipo A (ES→EN)**: Producción — ves la frase en español, produces el inglés
-- **Tipo B (EN→ES)**: Comprensión — ves la palabra/frase en inglés, produces el español
+Each entry generates two cards:
+- **Type A (ES→EN)**: Production — you see the Spanish sentence and produce the English
+- **Type B (EN→ES)**: Comprehension — you see the English word/phrase and produce the Spanish
 
-### 3. Importar al deck
+### 3. Import into a deck
 
 ```bash
 python3 flashcards.py import csvs/TBBT_S01E01.csv --deck "TBBT S01E01"
 ```
 
-Las tarjetas duplicadas (mismo `id` + `tipo`) se ignoran automáticamente.
+Duplicate cards (same `id` + `tipo`) are silently ignored.
 
-### 4. Repasar
+### 4. Review
 
 ```bash
-# Repasar un deck específico
+# Review a specific deck
 python3 flashcards.py review --deck "TBBT S01E01"
 
-# Repasar todos los decks con tarjetas pendientes
+# Review all decks with due cards
 python3 flashcards.py review
 
-# Solo tarjetas tipo A (producción ES→EN)
+# Type A cards only (production ES→EN)
 python3 flashcards.py review --tipo-a
 
-# Solo tarjetas tipo B (comprensión EN→ES)
+# Type B cards only (comprehension EN→ES)
 python3 flashcards.py review --tipo-b
 
-# Sin audio
+# Mute audio
 python3 flashcards.py review --mute
 
-# Acento británico
+# British accent
 python3 flashcards.py review --accent uk
 
-# Acento australiano
+# Australian accent
 python3 flashcards.py review --accent au
 ```
 
-Al mostrar la respuesta se reproduce automáticamente la palabra/expresión en inglés dos veces: primero a velocidad normal y luego al 50%. El audio se cachea en `.audio_cache/` para no volver a descargarlo.
+When the answer is revealed, the English word/phrase plays automatically twice: first at normal speed, then at 50%. Audio is cached in `.audio_cache/` so it is never downloaded twice.
 
-Acentos disponibles (`--accent`):
-- `us` — Americano (default)
-- `uk` — Británico
-- `au` — Australiano
-- `in` — Indio
+Available accents (`--accent`):
+- `us` — American (default)
+- `uk` — British
+- `au` — Australian
+- `in` — Indian
 
-Durante el repaso:
-- **ENTER** — ver la respuesta
-- **1** — Again (no la sabía)
-- **2** — Hard (costó)
-- **3** — Good (bien)
-- **4** — Easy (fácil)
-- **n** — añadir/editar nota personal en la tarjeta
-- **d** — eliminar tarjeta
-- **q** — salir
+During a review session:
+- **ENTER** — reveal the answer
+- **1** — Again (didn't know it)
+- **2** — Hard (struggled)
+- **3** — Good (got it)
+- **4** — Easy (trivial)
+- **n** — add/edit a personal note on the card
+- **d** — delete card
+- **q** — quit
 
-### Tarjetas enriquecidas
+### Enriched cards
 
-Las tarjetas muestran información lingüística adicional al revelar la respuesta:
+Cards display additional linguistic information when the answer is revealed:
 
-- **Pronunciación IPA** junto a la palabra
-- **Registro** (formal, neutro, coloquial, vulgar)
-- **Colocaciones** frecuentes
-- **Acepciones** principales (tipo A)
-- **Por qué ahora** — justificación de utilidad (tipo B)
-- **Nota personal** — visible si la has añadido con `n`
+- **IPA pronunciation** next to the word
+- **Register** (formal, neutral, colloquial, vulgar)
+- **Common collocations**
+- **Main meanings** (type A)
+- **Why now** — usefulness justification (type B)
+- **Personal note** — shown if you added one with `n`
 
-### 5. Repetir
+### 5. Repeat
 
-Repasar todos los días toma unos minutos. Las tarjetas difíciles aparecen más seguido, las fáciles se espacian.
+Daily reviews take just a few minutes. Difficult cards appear more often; easy ones are spaced further apart.
 
 ```bash
 python3 flashcards.py review
 ```
 
-## Otros comandos
+## Other commands
 
 ```bash
-# Ver estadísticas por deck
+# Show statistics by deck
 python3 flashcards.py stats
 
-# Listar todos los decks
+# List all decks
 python3 flashcards.py decks
 
-# Combinar varios decks en uno (ej: todos los episodios de una temporada)
+# Merge several decks into one (e.g. all episodes of a season)
 python3 flashcards.py merge --decks "TBBT S01E01" "TBBT S01E02" --into "TBBT Season 1"
 
-# Ver historial de sesiones, racha y leeches
+# Show session history, streak, and leeches
 python3 flashcards.py history
 
-# Ver progreso por palabra (reviews, estado, próximo repaso)
+# Show per-word progress (reviews, state, next review date)
 python3 flashcards.py word-stats
 python3 flashcards.py word-stats --deck "TBBT S01E01"
 ```
 
-El merge no borra los decks originales, solo copia las tarjetas (sin duplicar) al deck destino.
+Merge does not delete the source decks — it copies cards (without duplicating) into the target deck.
 
-### Estadísticas por palabra
+### Per-word statistics
 
-`word-stats` muestra una tabla con cada palabra del deck: cuántas veces se ha repasado (tipos A y B por separado), estado de aprendizaje y cuándo toca repasar de nuevo.
+`word-stats` shows a table with each word in the deck: how many times it has been reviewed (types A and B separately), learning state, and when it is next due.
 
-- **Nueva** (gris) — nunca repasada
-- **Aprend.** (amarillo) — en proceso de aprendizaje inicial
-- **Repaso** (verde) — en ciclo de repaso espaciado (madura)
-- **Reapren.** (rojo) — olvidada, reaprendiendo
+- **Nueva** (grey) — never reviewed
+- **Aprend.** (yellow) — in the initial learning phase
+- **Repaso** (green) — in the spaced repetition cycle (mature)
+- **Reapren.** (red) — forgotten, relearning
 
-Una palabra cuenta como **madura** cuando tanto su tipo A como su tipo B están en estado Repaso.
+A word is considered **mature** when both its type A and type B cards are in the Repaso state.
 
-### Historial y leeches
+### History and leeches
 
-`history` muestra una tabla con los últimos 14 días de actividad (tarjetas repasadas y % de aciertos), racha actual y mejor racha, y las **leeches**: palabras marcadas como Again en 2 o más sesiones distintas, ordenadas por frecuencia.
+`history` shows a table with the last 14 days of activity (cards reviewed and accuracy %), current and best streak, and the **leeches**: words marked Again in 2 or more distinct sessions, sorted by frequency.
 
-## Formato CSV
+## CSV format
 
-Separador: `;` (punto y coma). 13 columnas:
+Separator: `;` (semicolon). 13 columns:
 
-| Columna | Descripción |
-|---------|-------------|
-| `id` | Número correlativo (001, 002, ...) |
-| `tipo` | `A` (ES→EN) o `B` (EN→ES) |
-| `palabra_en` | Palabra, phrasal verb o expresión en inglés |
-| `palabra_es` | La palabra en español tal como aparece en `frase_es` (para resaltarla) |
-| `frase_en` | Frase de la fuente donde aparece |
-| `frase_en_cloze` | La misma frase con `palabra_en` reemplazada por `____` |
-| `frase_es` | Traducción natural al español |
-| `pronunciacion_ipa` | Pronunciación IPA |
+| Column | Description |
+|--------|-------------|
+| `id` | Sequential number (001, 002, ...) |
+| `tipo` | `A` (ES→EN) or `B` (EN→ES) |
+| `palabra_en` | English word, phrasal verb, or expression |
+| `palabra_es` | The Spanish word as it appears in `frase_es` (used for highlighting) |
+| `frase_en` | Sentence from the source where the word appears |
+| `frase_en_cloze` | Same sentence with `palabra_en` replaced by `____` |
+| `frase_es` | Natural Spanish translation |
+| `pronunciacion_ipa` | IPA pronunciation |
 | `registro` | formal / neutro / coloquial / vulgar |
-| `colocaciones` | Separadas por `\|` (pipe) |
-| `acepciones` | Separadas por `\|` (pipe) |
-| `por_que_ahora` | Solo tipo B, vacío para tipo A |
-| `fuente` | Identificador de la fuente |
+| `colocaciones` | Pipe-separated (`\|`) collocations |
+| `acepciones` | Pipe-separated (`\|`) meanings |
+| `por_que_ahora` | Type B only, empty for type A |
+| `fuente` | Source identifier |
 
-## Dependencias
+## Dependencies
 
 ```bash
 pip install fsrs gTTS
 ```
 
-`ffplay` (parte de ffmpeg) se usa para reproducir audio. Viene preinstalado en la mayoría de distros Linux.
+`ffplay` (part of ffmpeg) is used to play audio. It comes pre-installed on most Linux distros.
 
-## Estructura de archivos
+## File structure
 
 ```
 flashcards/
-├── flashcards.py        # Script principal
-├── prompt.txt           # Prompt para generar CSV con Claude
+├── flashcards.py        # Main script
+├── prompt.txt           # Prompt for generating CSVs with Claude
 ├── README.md
+├── README.es.md
 ├── TODO.md
-├── csvs/                # CSVs generados (no incluido en repo público)
+├── csvs/                # Generated CSVs (not included in public repo)
 │   └── *.csv
-├── decks/               # Datos de tarjetas y progreso (no incluido en repo público)
-│   ├── *.json           # Decks de tarjetas
-│   └── sessions.json    # Log de sesiones de repaso
-└── .audio_cache/        # Cache de audio TTS (se genera solo)
+├── decks/               # Card data and progress (not included in public repo)
+│   ├── *.json           # Card decks
+│   └── sessions.json    # Review session log
+└── .audio_cache/        # TTS audio cache (auto-generated)
 ```
 
-> `csvs/` y `decks/` contienen tus datos personales de estudio. Se recomienda respaldarlos en un repo privado o servicio de backup.
+> `csvs/` and `decks/` contain your personal study data. It is recommended to back them up in a private repo or backup service.
